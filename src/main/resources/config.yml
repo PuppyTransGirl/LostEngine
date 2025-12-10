@@ -1,0 +1,10 @@
+pack_hosting:
+  resource_pack_prompt: "Download the Lost Engine resource pack"
+  self_hosted:
+    enabled: true
+    hostname: 0.0.0.0
+    port: 7270
+  external_host:
+    enabled: false
+    url: ""
+geyser_compatibility: false

@@ -1,0 +1,13 @@
+name: LostEngine
+version: '1.0-SNAPSHOT'
+main: dev.lost.engine.LostEngine
+api-version: '1.21.10'
+authors: [Thomas (misieur)]
+website: https://misieur.me/
+bootstrapper: dev.lost.engine.bootstrap.LostEngineBootstrap
+dependencies:
+  server:
+    floodgate:
+      load: BEFORE
+      required: false
+      join-classpath: true

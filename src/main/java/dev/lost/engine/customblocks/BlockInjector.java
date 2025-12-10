@@ -1,0 +1,106 @@
+package dev.lost.engine.customblocks;
+
+import dev.lost.engine.annotations.CanBreakOnUpdates;
+import dev.lost.engine.assetsgenerators.DataPackGenerator;
+import dev.lost.engine.customblocks.customblocks.RegularCustomBlock;
+import dev.lost.engine.customblocks.customblocks.TNTCustomBlock;
+import dev.lost.engine.items.ItemInjector;
+import dev.lost.engine.utils.ReflectionUtils;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.RegistrationInfo;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
+import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
+
+@CanBreakOnUpdates(lastCheckedVersion = "1.21.10")
+public class BlockInjector {
+
+    @SuppressWarnings("unchecked")
+    private static final MappedRegistry<Block> REGISTRY = (MappedRegistry<Block>) BuiltInRegistries.BLOCK;
+
+    public static void injectRegularBlock(
+            String id,
+            BlockState clientBlockState,
+            DataPackGenerator dataPackGenerator,
+            float destroyTime,
+            float explosionResistance,
+            @NotNull Minable minable
+    ) throws Exception {
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lost_engine", id));
+
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_LIGHT_BLUE) // Little easter egg
+                .requiresCorrectToolForDrops()
+                .strength(destroyTime, explosionResistance)
+                .sound(switch (minable) {
+                    case AXE -> SoundType.WOOD;
+                    case HOE, SHOVEL -> SoundType.GRAVEL;
+                    case PICKAXE, NONE -> SoundType.STONE;
+                })
+                .setId(key);
+
+        Block custom = new RegularCustomBlock(properties, clientBlockState);
+
+        REGISTRY.createIntrusiveHolder(custom);
+        REGISTRY.register(key, custom, RegistrationInfo.BUILT_IN);
+
+        Block.BLOCK_STATE_REGISTRY.add(custom.defaultBlockState());
+
+        // Use a random material to fix some bugs with Bukkit and plugins
+        ReflectionUtils.setBlockMaterial(custom, Material.COBBLESTONE);
+
+        Item item = ItemInjector.injectBlockItem(id, custom);
+
+        switch (minable) {
+            case AXE -> dataPackGenerator.addAxeMinable(key.location().toString());
+            case HOE -> dataPackGenerator.addHoeMinable(key.location().toString());
+            case PICKAXE -> dataPackGenerator.addPickaxeMinable(key.location().toString());
+            case SHOVEL -> dataPackGenerator.addShovelMinable(key.location().toString());
+        }
+    }
+
+    public static void injectTNTBlock(
+            String id,
+            BlockState clientBlockState,
+            float explosionPower
+    ) throws Exception {
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lost_engine", id));
+
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_LIGHT_BLUE) // Little easter egg
+                .instabreak()
+                .ignitedByLava()
+                .isRedstoneConductor((state, level, pos) -> false)
+                .sound(SoundType.GRASS)
+                .setId(key);
+
+        Block custom = new TNTCustomBlock(properties, clientBlockState, explosionPower);
+
+        REGISTRY.createIntrusiveHolder(custom);
+        REGISTRY.register(key, custom, RegistrationInfo.BUILT_IN);
+
+        Block.BLOCK_STATE_REGISTRY.add(custom.defaultBlockState());
+
+        ReflectionUtils.setBlockMaterial(custom, Material.TNT);
+
+        Item item = ItemInjector.injectBlockItem(id, custom);
+    }
+
+    public enum Minable {
+        AXE,
+        HOE,
+        PICKAXE,
+        SHOVEL,
+        NONE
+    }
+
+}

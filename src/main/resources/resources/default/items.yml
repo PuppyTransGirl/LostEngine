@@ -1,0 +1,97 @@
+tool_materials:
+  LOST:
+    base: NETHERITE
+    durability: 3046
+    speed: 32.0
+    attack_damage_bonus: 6.0
+    enchantment_value: 15
+    repair_item: lost_engine:ingot
+items:
+  ingot:
+    name:
+      en_US: "Lost Ingot"
+      fr_FR: "Lingot Perdu"
+    type: generic
+    texture: item/ingot
+  sword:
+    name:
+      en_US: "Lost Sword"
+      fr_FR: "Épée Perdue"
+    type: sword
+    texture: item/sword
+    material: LOST
+  shovel:
+    name:
+      en_US: "Lost Shovel"
+      fr_FR: "Pelle Perdue"
+    type: shovel
+    texture: item/shovel
+    material: LOST
+  pickaxe:
+    name:
+      en_US: "Lost Pickaxe"
+      fr_FR: "Pioche Perdue"
+    type: pickaxe
+    texture: item/pickaxe
+    material: LOST
+  axe:
+    name:
+      en_US: "Lost Axe"
+      fr_FR: "Hache Perdue"
+    type: axe
+    texture: item/axe
+    material: LOST
+  hoe:
+    name:
+      en_US: "Lost Hoe"
+      fr_FR: "Houe Perdue"
+    type: hoe
+    texture: item/hoe
+    material: LOST
+  baguette:
+    name:
+      en_US: "Baguette"
+    type: generic
+    texture: item/baguette
+    food:
+      nutrition: 10
+      saturation_modifier: 1
+      can_always_eat: false
+blocks:
+  ore:
+    name:
+      en_US: "Lost Ore"
+      fr_FR: "Minerai Perdu"
+    type: regular
+    tool_type: pickaxe
+    texture: block/ore
+    destroy_time: 2.0
+    explosion_resistance: 6.0
+    drops:
+      type: ore
+      item: lost_engine:ingot
+#     min: 1
+#     max: 1
+    required_material: NETHERITE
+  block:
+    name:
+      en_US: "Lost Block"
+      fr_FR: "Bloc Perdu"
+    type: regular
+    tool_type: pickaxe
+    texture: block/block
+    destroy_time: 2.0
+    explosion_resistance: 6.0
+    required_material: NETHERITE
+    beacon_base: true
+    drops:
+      type: self
+  tnt:
+    name:
+      en_US: "Lost TNT"
+      fr_FR: "TNT Perdue"
+    type: tnt
+    texture: block/tnt
+    explosion_power: 8
+    drops:
+      type: self

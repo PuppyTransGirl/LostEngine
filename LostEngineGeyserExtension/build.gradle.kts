@@ -1,0 +1,41 @@
+plugins {
+    id("java")
+}
+
+group = "dev.lost"
+version = "1.0-SNAPSHOT"
+val id = "lostenginegeyserextension"
+val extensionName = "LostEngineGeyserExtension"
+val author = "Misieur"
+val geyserApiVersion = "2.9.0"
+
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+    maven("https://repo.opencollab.dev/main/")
+}
+
+dependencies {
+    compileOnly("com.github.misieur.GeyserMC:api:custom-item-api-v2-SNAPSHOT")
+    //compileOnly("org.geysermc.geyser:api:$geyserApiVersion-SNAPSHOT")
+    // Using the same versions as Geyser for compatibility
+    compileOnly("it.unimi.dsi:fastutil:8.5.15")
+    compileOnly("com.google.code.gson:gson:2.3.1")
+
+    compileOnly("org.jetbrains:annotations:26.0.2-1")
+
+}
+
+tasks {
+    processResources {
+        filesMatching("extension.yml") {
+            expand(
+                "id" to id,
+                "name" to extensionName,
+                "api" to geyserApiVersion,
+                "version" to version,
+                "author" to author
+            )
+        }
+    }
+}
