@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -75,7 +76,7 @@ public class ResourceInjector {
             if (materialSection == null)
                 continue;
 
-            String base = materialSection.getString("base", "netherite").toUpperCase();
+            String base = materialSection.getString("base", "netherite").toUpperCase(Locale.ROOT);
             int durability = materialSection.getInt("durability", 59);
             float speed = (float) materialSection.getDouble("speed", 2.0F);
             float attackDamageBonus = (float) materialSection.getDouble("attack_damage_bonus", 0.0);
@@ -85,7 +86,7 @@ public class ResourceInjector {
             dataPackGenerator.addToolMaterial(repairItems.location().getPath(), repairItem);
             ToolMaterial baseMaterial = getOrThrow(toolMaterials, base, "Invalid base material: " + base);
 
-            toolMaterials.put(key.toUpperCase(), ItemInjector.createToolMaterial(baseMaterial, durability, speed, attackDamageBonus, enchantmentValue, repairItems));
+            toolMaterials.put(key.toUpperCase(Locale.ROOT), ItemInjector.createToolMaterial(baseMaterial, durability, speed, attackDamageBonus, enchantmentValue, repairItems));
         }
     }
 
@@ -111,7 +112,7 @@ public class ResourceInjector {
                     case "sword" -> {
                         float attackDamage = (float) itemSection.getDouble("attack_damage", 3.0F);
                         float attackSpeed = (float) itemSection.getDouble("attack_speed", -2.4F);
-                        String materialName = itemSection.getString("material", "netherite").toUpperCase();
+                        String materialName = itemSection.getString("material", "netherite").toUpperCase(Locale.ROOT);
                         ToolMaterial material = getOrThrow(toolMaterials, materialName, "Invalid tool material: " + materialName);
 
                         ItemInjector.injectSword(key, attackDamage, attackSpeed, material, dataPackGenerator, components);
@@ -120,7 +121,7 @@ public class ResourceInjector {
                     case "shovel" -> {
                         float attackDamage = (float) itemSection.getDouble("attack_damage", 1.5F);
                         float attackSpeed = (float) itemSection.getDouble("attack_speed", -3.0F);
-                        String materialName = itemSection.getString("material", "netherite").toUpperCase();
+                        String materialName = itemSection.getString("material", "netherite").toUpperCase(Locale.ROOT);
                         ToolMaterial material = getOrThrow(toolMaterials, materialName, "Invalid tool material: " + materialName);
 
                         ItemInjector.injectShovel(key, attackDamage, attackSpeed, material, dataPackGenerator, components);
@@ -129,7 +130,7 @@ public class ResourceInjector {
                     case "pickaxe" -> {
                         float attackDamage = (float) itemSection.getDouble("attack_damage", 1.0F);
                         float attackSpeed = (float) itemSection.getDouble("attack_speed", -2.8F);
-                        String materialName = itemSection.getString("material", "netherite").toUpperCase();
+                        String materialName = itemSection.getString("material", "netherite").toUpperCase(Locale.ROOT);
                         ToolMaterial material = getOrThrow(toolMaterials, materialName, "Invalid tool material: " + materialName);
 
                         ItemInjector.injectPickaxe(key, attackDamage, attackSpeed, material, dataPackGenerator, components);
@@ -138,7 +139,7 @@ public class ResourceInjector {
                     case "axe" -> {
                         float attackDamage = (float) itemSection.getDouble("attack_damage", 5.0F);
                         float attackSpeed = (float) itemSection.getDouble("attack_speed", -3.0F);
-                        String materialName = itemSection.getString("material", "netherite").toUpperCase();
+                        String materialName = itemSection.getString("material", "netherite").toUpperCase(Locale.ROOT);
                         ToolMaterial material = getOrThrow(toolMaterials, materialName, "Invalid tool material: " + materialName);
 
                         ItemInjector.injectAxe(key, attackDamage, attackSpeed, material, dataPackGenerator, components);
@@ -146,7 +147,7 @@ public class ResourceInjector {
 
                     case "hoe" -> {
                         float attackSpeed = (float) itemSection.getDouble("attack_speed", 0.0F);
-                        String materialName = itemSection.getString("material", "netherite").toUpperCase();
+                        String materialName = itemSection.getString("material", "netherite").toUpperCase(Locale.ROOT);
                         ToolMaterial material = getOrThrow(toolMaterials, materialName, "Invalid tool material: " + materialName);
 
                         ItemInjector.injectHoe(key, attackSpeed, material, dataPackGenerator, components);
@@ -173,7 +174,7 @@ public class ResourceInjector {
         for (String key : blocksSection.getKeys(false)) {
             ConfigurationSection blockSection = blocksSection.getConfigurationSection(key);
             if (blockSection == null) continue;
-            String requiredMaterial = blockSection.getString("required_material", "NONE").toUpperCase();
+            String requiredMaterial = blockSection.getString("required_material", "NONE").toUpperCase(Locale.ROOT);
             switch (requiredMaterial) {
                 case "WOOD" -> dataPackGenerator.needsWoodenTool("lost_engine:" + key);
                 case "STONE" -> dataPackGenerator.needsStoneTool("lost_engine:" + key);
@@ -212,7 +213,7 @@ public class ResourceInjector {
                             dataPackGenerator,
                             (float) blockSection.getDouble("destroy_time", 0F),
                             (float) blockSection.getDouble("explosion_resistance", 0F),
-                            BlockInjector.Minable.valueOf(blockSection.getString("tool_type", "none").toUpperCase())
+                            BlockInjector.Minable.valueOf(blockSection.getString("tool_type", "none").toUpperCase(Locale.ROOT))
                     );
                     case "tnt" -> BlockInjector.injectTNTBlock(
                             key,
