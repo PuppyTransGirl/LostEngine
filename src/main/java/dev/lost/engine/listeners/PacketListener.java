@@ -1,9 +1,6 @@
 package dev.lost.engine.listeners;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 import dev.lost.engine.LostEngine;
@@ -19,8 +16,8 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
-import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.kyori.adventure.key.Key;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -40,16 +37,19 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -190,7 +190,7 @@ public class PacketListener {
                     }
                 }
             }
-            case ServerboundResourcePackPacket(UUID id, ServerboundResourcePackPacket.Action action) -> {
+            case ServerboundResourcePackPacket(UUID ignored, ServerboundResourcePackPacket.Action action) -> {
                 if (handler.isWaitingForResourcePack && action == ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED) {
                     ctx.channel().writeAndFlush(ClientboundFinishConfigurationPacket.INSTANCE);
                 }
@@ -406,7 +406,7 @@ public class PacketListener {
                     }
                 }
             }
-            case ClientboundFinishConfigurationPacket packet -> {
+            case ClientboundFinishConfigurationPacket ignored -> {
                 if (handler.isWaitingForResourcePack) {
                     handler.isWaitingForResourcePack = false;
                     break; // Avoid sending it twice
@@ -427,6 +427,19 @@ public class PacketListener {
                 if (player == null) break;
                 processNewSlot(handler.slot, (byte) slot, player);
                 handler.slot = (byte) slot;
+            }
+            case ClientboundUpdateRecipesPacket packet-> {
+                try {
+                    for (Map.Entry<ResourceKey<RecipePropertySet>, RecipePropertySet> entry : packet.itemSets().entrySet()) {
+                        Set<Holder<Item>> oldItems = ReflectionUtils.getItems(entry.getValue());
+                        Set<Holder<Item>> newItems = new ObjectOpenHashSet<>(oldItems);
+                        newItems.removeIf(item -> item.value().asItem() instanceof CustomItem);
+                        if (oldItems.size() != newItems.size())
+                            ReflectionUtils.setItems(entry.getValue(), newItems);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to update items via reflection in ClientboundUpdateRecipesPacket", e);
+                }
             }
             default -> {
             }

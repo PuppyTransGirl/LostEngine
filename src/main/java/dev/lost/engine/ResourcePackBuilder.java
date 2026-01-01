@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 @SuppressWarnings("PatternValidation") // Stupid thing I don't even know why it's here
@@ -131,6 +132,33 @@ public class ResourcePackBuilder {
                                     langFileGenerator.addTranslation(langCode, "item.lost_engine." + key, name);
                                 }
                             });
+                        }
+                    }
+                }
+            }
+            ConfigurationSection materialsSection = config.config().getConfigurationSection("materials");
+            if (materialsSection != null) {
+                for (String key : materialsSection.getKeys(false)) {
+                    ConfigurationSection materialSection = materialsSection.getConfigurationSection(key);
+                    if (materialSection != null) {
+                        String armorTexture = materialSection.getString("armor.texture", null);
+                        if (armorTexture != null) {
+                            resourcePack.jsonFile("assets/minecraft/equipment/%s.json".formatted(key.toLowerCase(Locale.ROOT)), JsonParser.parseString("""
+                                    {
+                                      "layers": {
+                                        "humanoid": [
+                                          {
+                                            "texture": "lost_engine:%s"
+                                          }
+                                        ],
+                                        "humanoid_leggings": [
+                                          {
+                                            "texture": "lost_engine:%s"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                    """.formatted(armorTexture, armorTexture)));
                         }
                     }
                 }

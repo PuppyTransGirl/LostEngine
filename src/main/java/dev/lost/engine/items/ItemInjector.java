@@ -6,6 +6,7 @@ import dev.lost.engine.customblocks.customblocks.CustomBlock;
 import dev.lost.engine.items.customitems.*;
 import dev.lost.engine.utils.ReflectionUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -13,9 +14,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.equipment.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -23,16 +26,32 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.function.Function;
 
-@CanBreakOnUpdates(lastCheckedVersion = "1.21.10")
+@SuppressWarnings("UnusedReturnValue")
+@CanBreakOnUpdates(lastCheckedVersion = "1.21.11")
 public class ItemInjector {
 
     @Contract("_, _, _, _, _, _ -> new")
     public static @NotNull ToolMaterial createToolMaterial(@NotNull ToolMaterial baseMaterial, int durability, float speed, float attackDamageBonus, int enchantmentValue, TagKey<Item> repairItems) {
         return new ToolMaterial(baseMaterial.incorrectBlocksForDrops(), durability, speed, attackDamageBonus, enchantmentValue, repairItems);
+    }
+
+    @Contract("_, _, _, _, _, _, _, _ -> new")
+    public static @NonNull ArmorMaterial createArmorMaterial(int durability, Map<net.minecraft.world.item.equipment.ArmorType, Integer> defense, int enchantmentValue, String equipSound, float toughness, float knockbackResistance, TagKey<Item> repairItems, String assetId) {
+        return new ArmorMaterial(
+                durability,
+                defense,
+                enchantmentValue,
+                Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse(equipSound))),
+                toughness,
+                knockbackResistance,
+                repairItems,
+                ReflectionUtils.createEquipmentAssetId(assetId)
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -187,6 +206,57 @@ public class ItemInjector {
         );
         ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.FILLED_MAP);
         return item;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static @NotNull Item injectArmor(
+            String name,
+            ArmorMaterial armorMaterial,
+            ArmorType armorType,
+            DataPackGenerator dataPackGenerator,
+            @Nullable Map<DataComponentType<?>, ?> components
+    ) throws Exception {
+        String fullName = "lost_engine:" + name;
+        Item.Properties properties = new Item.Properties();
+        if (components != null) {
+            for (Map.Entry<DataComponentType<?>, ?> component : components.entrySet()) {
+                properties.component((DataComponentType<Object>) component.getKey(), component.getValue());
+            }
+        }
+
+        return switch (armorType) {
+            case HELMET -> {
+                dataPackGenerator.addHelmet(fullName);
+                Item item = registerItem(fullName, properties.humanoidArmor(armorMaterial, net.minecraft.world.item.equipment.ArmorType.HELMET));
+                ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.IRON_HELMET);
+                yield item;
+            }
+            case CHESTPLATE -> {
+                dataPackGenerator.addChestplate(fullName);
+                Item item = registerItem(fullName, properties.humanoidArmor(armorMaterial, net.minecraft.world.item.equipment.ArmorType.CHESTPLATE));
+                ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.IRON_CHESTPLATE);
+                yield item;
+            }
+            case LEGGINGS -> {
+                dataPackGenerator.addLeggings(fullName);
+                Item item = registerItem(fullName, properties.humanoidArmor(armorMaterial, net.minecraft.world.item.equipment.ArmorType.LEGGINGS));
+                ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.IRON_LEGGINGS);
+                yield item;
+            }
+            case BOOTS -> {
+                dataPackGenerator.addBoots(fullName);
+                Item item = registerItem(fullName, properties.humanoidArmor(armorMaterial, net.minecraft.world.item.equipment.ArmorType.BOOTS));
+                ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.IRON_BOOTS);
+                yield item;
+            }
+        };
+    }
+
+    public enum ArmorType {
+        HELMET,
+        CHESTPLATE,
+        LEGGINGS,
+        BOOTS
     }
 
     public static @NotNull Map<String, String> blockStateToPropertyMap(@NotNull BlockState blockState) {
