@@ -298,6 +298,7 @@ public class ItemInjector {
             String name,
             int durability,
             float attackDamage,
+            DataPackGenerator dataPackGenerator,
             @Nullable Map<DataComponentType<?>, ?> components
     ) throws Exception {
         String fullName = "lost_engine:" + name;
@@ -341,6 +342,7 @@ public class ItemInjector {
         );
 
         ReflectionUtils.setItemMaterial(item.getDefaultInstance(), Material.TRIDENT);
+        dataPackGenerator.addTrident(fullName);
         return item;
     }
 
